@@ -14,9 +14,13 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, F
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 # ===== env & constants =====
-load_dotenv()
-NAVER_ID = os.getenv("NAVER_ID", "test_id")
-NAVER_SECRET = os.getenv("NAVER_SECRET", "test_secret")
+try:
+    load_dotenv()
+    NAVER_ID = os.getenv("NAVER_ID", "test_id")
+    NAVER_SECRET = os.getenv("NAVER_SECRET", "test_secret")
+except:
+    NAVER_ID = "test_id"
+    NAVER_SECRET = "test_secret"
 
 API_URL = "https://openapi.naver.com/v1/search/blog.json"
 DEFAULT_BRANCHES = [
