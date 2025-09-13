@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python test_app.py"
+    "startCommand": "uvicorn app:app --host 0.0.0.0 --port 8080"
   }
 }
