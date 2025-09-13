@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>지점별 블로그 상위 3 URL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      min-height: 100vh;
+      margin: 0;
+      padding: 10px;
+      color: #1f2937;
+    }
+    
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 12px;
+      animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    
+    .section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .section:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section h3 {
+      margin: 0 0 12px 0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    label {
+      display: block;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #ffffff;
+      margin-bottom: 0;
+      height: 48px;
+      box-sizing: border-box;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    .row {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    
+    .row .input-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    
+    .row .button-group {
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 auto;
+      justify-content: center;
+      transform: translateY(-5px);
+    }
+    
+    .section .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+    
+    .row .button-group button {
+      width: auto;
+      min-width: 100px;
+      padding: 12px 16px;
+      font-size: 14px;
+      height: 48px;
+      box-sizing: border-box;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    button:hover::before {
+      left: 100%;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+    }
+    
+    .keyword-list {
+      min-height: 32px;
+      background: transparent;
+      border-radius: 12px;
+      padding: 8px;
+      border: none;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .keyword-list.has-keywords {
+      border: none;
+      background: transparent;
+    }
+    
+    .keyword-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      animation: fadeIn 0.3s ease;
+      font-size: 0.8rem;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .keyword-item:hover {
+      background: #e2e8f0;
+      transform: scale(1.05);
+    }
+    
+    .keyword-item span {
+      font-weight: 500;
+      color: #475569;
+      font-size: 0.8rem;
+    }
+    
+    .keyword-item button {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      font-size: 12px;
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      border-radius: 50%;
+      margin: 0;
+      min-width: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .keyword-item button:hover {
+      color: #64748b;
+      background: #f1f5f9;
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: #9ca3af;
+      font-style: italic;
+      padding: 20px;
+    }
+    
+    .results-section {
+      margin-top: 32px;
+      animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    th {
+      background: #6b7280;
+      color: white;
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    
+    td {
+      padding: 16px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background-color 0.2s ease;
+    }
+    
+    tr:hover td {
+      background-color: #f8fafc;
+    }
+    
+    td.rank {
+      text-align: center;
+      width: 50px;
+      font-weight: 600;
+      color: #667eea;
+      font-size: 0.9rem;
+    }
+    
+    td a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      font-size: 1.2em;
+    }
+    
+    td a:hover {
+      color: #764ba2;
+      text-decoration: none;
+      transform: scale(1.1);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+      font-style: italic;
+    }
+    
+    .hidden { display: none; }
+    
+    .info-text {
+      background: #f8f9fa;
+      border: none;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 8px;
+      color: #6c757d;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    
+    .footer-section {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      margin-top: 12px;
+    }
+    
+    .footer-links {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .footer-link {
+      color: #6c757d;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .footer-link:hover {
+      background: #e9ecef;
+      color: #495057;
+      transform: translateY(-1px);
+    }
+    
+    @media (max-width: 480px) {
+      .row {
+        flex-direction: row;
+        gap: 6px;
+      }
+      
+      .row .button-group button {
+        width: auto;
+        min-width: 80px;
+        font-size: 13px;
+        padding: 10px 12px;
+      }
+      
+      h1 {
+        font-size: 1.1rem;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .container {
+        max-width: 600px;
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 1.6rem;
+      }
+      
+      .section {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>지점별 네이버 블로그 상위 3 URL</h1>
+
+    <div class="section">
+      <h3>지점 선택</h3>
+      <select id="branch"></select>
+    </div>
+
+    <div class="section">
+      <h3>키워드 관리</h3>
+      <div class="row">
+        <div class="input-group">
+          <input type="text" id="newKeyword" placeholder="새 키워드를 입력하세요">
+        </div>
+        <div class="button-group">
+          <button id="addBtn" class="btn-primary">키워드 추가</button>
+        </div>
+      </div>
+      
+      <div id="keywordListWrap">
+        <label>현재 키워드 목록</label>
+        <div id="keywordList" class="keyword-list">
+          <div class="empty-state">키워드가 없습니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="button-group">
+        <button id="runBtn" class="btn-success">저장된 키워드로 조회</button>
+      </div>
+      <div class="info-text">
+        정렬 유사도 고정. URL 클릭 시 새창
+      </div>
+    </div>
+
+    <div id="resultWrap" class="hidden results-section">
+      <div class="section">
+        <h3>조회 결과</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>키워드</th>
+              <th>순위</th>
+              <th>블로그아이디</th>
+              <th>URL</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section footer-section">
+      <div class="footer-links">
+        <a href="/guide" class="footer-link">📖 개발가이드</a>
+        <a href="tel:010-9741-7415" class="footer-link">문의: 010-9741-7415</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const branchSel = document.getElementById("branch");
+    const newKwInput = document.getElementById("newKeyword");
+    const keywordList = document.getElementById("keywordList");
+    const tbody     = document.getElementById("tbody");
+    const wrap      = document.getElementById("resultWrap");
+    const addBtn    = document.getElementById("addBtn");
+    const runBtn    = document.getElementById("runBtn");
+
+    function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+    function extractBlogId(url){
+      try{const u=new URL(url);const p=u.pathname.split("/").filter(Boolean);return p[0]||"";}catch(e){return "";}
+    }
+
+    async function loadBranches(){
+      const res = await fetch("/api/branches");
+      const data = await res.json();
+      branchSel.innerHTML = data.map(b=>`<option value="${b.id}">${escapeHtml(b.name)}</option>`).join("");
+    }
+
+    async function loadKeywords(){
+      const id = parseInt(branchSel.value,10);
+      const res = await fetch(`/api/keywords?branch_id=${id}`);
+      if(!res.ok){ alert("키워드 불러오기 실패"); return; }
+      const data = await res.json();
+      renderKeywordList(data.keywords || []);
+    }
+
+    function renderKeywordList(keywords) {
+      if (keywords.length === 0) {
+        keywordList.innerHTML = '<div class="empty-state">키워드가 없습니다.</div>';
+        keywordList.classList.remove('has-keywords');
+        return;
+      }
+      
+      keywordList.classList.add('has-keywords');
+      keywordList.innerHTML = keywords.map(kw => `
+        <div class="keyword-item">
+          <span>${escapeHtml(kw)}</span>
+          <button onclick="deleteKeyword('${escapeHtml(kw)}')">×</button>
+        </div>
+      `).join('');
+    }
+
+    async function addKeyword() {
+      const id = parseInt(branchSel.value, 10);
+      const keyword = newKwInput.value.trim();
+      if (!keyword) {
+        alert("키워드를 입력해주세요.");
+        return;
+      }
+      
+      try {
+        const res = await fetch("/api/keywords/add", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ branch_id: id, keyword })
+        });
+        
+        if (!res.ok) {
+          const error = await res.text();
+          alert(`키워드 추가 실패: ${error}`);
+          return;
+        }
+        
+        newKwInput.value = "";
+        await loadKeywords(); // 목록 새로고침
+        alert("키워드가 추가되었습니다.");
+      } catch (error) {
+        alert("키워드 추가 중 오류가 발생했습니다.");
+      }
+    }
+
+    async function deleteKeyword(keyword) {
+      if (!confirm(`"${keyword}" 키워드를 삭제하시겠습니까?`)) {
+        return;
+      }
+      
+      const id = parseInt(branchSel.value, 10);
+      try {
+        const res = await fetch("/api/keywords/delete", {
+          method: "DELETE",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ branch_id: id, keyword })
+        });
+        
+        if (!res.ok) {
+          const error = await res.text();
+          alert(`키워드 삭제 실패: ${error}`);
+          return;
+        }
+        
+        await loadKeywords(); // 목록 새로고침
+        alert("키워드가 삭제되었습니다.");
+      } catch (error) {
+        alert("키워드 삭제 중 오류가 발생했습니다.");
+      }
+    }
+
+    function renderRows(rows){
+      if(!rows.length){ 
+        tbody.innerHTML = `<tr><td colspan="4" class="loading">결과 없음</td></tr>`; 
+        wrap.classList.remove("hidden"); 
+        return; 
+      }
+      tbody.innerHTML = "";
+      rows.forEach((r, index) => {
+        const tr = document.createElement("tr");
+        tr.style.animationDelay = `${index * 0.1}s`;
+        tr.style.animation = 'fadeIn 0.3s ease forwards';
+        tr.style.opacity = '0';
+        
+        const tdKw = document.createElement("td"); 
+        tdKw.textContent = r.keyword;
+        tdKw.style.fontWeight = '500';
+        tdKw.style.fontSize = '0.9rem';
+        
+        const tdRank = document.createElement("td"); 
+        tdRank.className="rank"; 
+        tdRank.textContent = r.rank;
+        
+        const tdId = document.createElement("td"); 
+        tdId.textContent = r.blog_id || extractBlogId(r.url);
+        tdId.style.fontFamily = 'monospace';
+        tdId.style.fontSize = '0.9em';
+        
+        const tdUrl = document.createElement("td");
+        const a = document.createElement("a"); 
+        a.href=r.url; 
+        a.target="_blank"; 
+        a.rel="noopener"; 
+        a.textContent="↗";
+        a.title = r.url; // 툴팁으로 전체 URL 표시
+        tdUrl.appendChild(a);
+        
+        tr.append(tdKw, tdRank, tdId, tdUrl);
+        tbody.appendChild(tr);
+      });
+      wrap.classList.remove("hidden");
+    }
+
+    async function runQuery(){
+      const id = parseInt(branchSel.value,10);
+      wrap.classList.remove("hidden");
+      tbody.innerHTML = `<tr><td colspan="4" class="loading">🔍 네이버 블로그를 조회 중입니다...</td></tr>`;
+      
+      try {
+        const res = await fetch("/api/run", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ branch_id:id })
+        });
+        
+        if(!res.ok){ 
+          const msg = await res.text(); 
+          tbody.innerHTML = `<tr><td colspan="4" class="loading" style="color: #ef4444;">❌ 오류 ${res.status}: ${msg}</td></tr>`; 
+          return; 
+        }
+        
+        const rows = await res.json();
+        renderRows(rows);
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="loading" style="color: #ef4444;">❌ 네트워크 오류가 발생했습니다.</td></tr>`;
+      }
+    }
+
+    // events
+    addBtn.onclick = addKeyword;
+    runBtn.onclick = runQuery;
+    
+    // 지점 변경 시 키워드 목록 자동 로드
+    branchSel.addEventListener("change", function() {
+      if (this.value) {
+        loadKeywords();
+      }
+    });
+    
+    // Enter 키로 키워드 추가
+    newKwInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        addKeyword();
+      }
+    });
+
+    // init
+    (async ()=>{ await loadBranches(); await loadKeywords(); })();
+  </script>
+</body>
+</html>

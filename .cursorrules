@@ -1,0 +1,45 @@
+Project Summary
+
+FastAPI + SQLite 프로젝트.
+
+목적: 지점별 키워드 리스트 저장/불러오기, 각 키워드에 대한 네이버 블로그 상위 3개 URL 조회(유사도 정렬 고정), 테이블/새창 링크 표시.
+
+프런트: templates/index.html(바닐라 JS). 백엔드: app.py(FastAPI).
+
+환경: Python 3.11+, Windows/PowerShell 기준. .env에서 NAVER_ID/NAVER_SECRET 사용. ACCESS_TOKEN은 현재 미사용.
+
+Hard Requirements
+
+sort=sim(유사도) 고정. 최신(date) 옵션 제공 금지.
+
+URL은 항상 target="_blank" rel="noopener"로 새창 열기.
+
+보안: .env는 절대 커밋하지 말 것. .env.example만 커밋.
+
+DB: SQLite (data.db). 마이그레이션 필요 시 자동 생성/기존 데이터 보존 우선.
+
+스타일: Python은 Black(+ isort) 스타일 선호. HTML/JS는 가독성 우선. 한국어 UI 유지.
+
+Code Organization
+
+app.py: 라우트/DB 모델/헬퍼 함수 포함. 모듈화가 필요하면 routers/, models/로 분리하되 import 경로 단순화.
+
+templates/index.html: 단일 페이지. 테이블 렌더링과 간단한 인터랙션만 JS로 처리.
+
+static/ 디렉토리는 필요 시 사용(아이콘, css, 추가 js).
+
+What NOT to change (unless asked)
+
+네이버 호출 방식(공식 오픈API).
+
+sort 파라미터 고정 정책.
+
+현재 엔드포인트 시그니처(/api/branches, /api/keywords, /api/run).
+
+When asked for new features
+
+먼저 작은 단위 PR 수준으로 변경(파일 diff 최소화).
+
+UI 변경 시 DOM id/class를 안정적으로 유지.
+
+백엔드 변경 시 간단한 happy-path 테스트 코드 첨부 권장 (pytest 선택).

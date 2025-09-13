@@ -1,0 +1,21 @@
+Python
+
+__pycache__/
+*.pyc
+
+Venv
+
+.venv/
+
+Local DB
+
+data.db
+
+Env
+
+.env
+
+VSCode/Cursor
+
+.vscode/
+.history/
