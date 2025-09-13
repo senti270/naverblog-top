@@ -647,10 +647,13 @@
     addBtn.onclick = addKeyword;
     runBtn.onclick = runQuery;
     
-    // 지점 변경 시 키워드 목록 자동 로드
+    // 지점 변경 시 키워드 목록 자동 로드 및 조회결과 초기화
     branchSel.addEventListener("change", function() {
       if (this.value) {
         loadKeywords();
+        // 조회결과 초기화
+        wrap.classList.add("hidden");
+        tbody.innerHTML = "";
       }
     });
     
