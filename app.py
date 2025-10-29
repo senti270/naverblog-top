@@ -268,19 +268,13 @@ def get_branches():
 @app.get("/api/keywords")
 def get_keywords(branch_id: int = Query(..., ge=1)):
     """지점 키워드 조회"""
-    if db:
-        # Firebase 사용
-        try:
-            keywords = get_keywords_from_firebase(branch_id)
-            return {"branch_id": branch_id, "keywords": keywords}
-        except Exception as e:
-            return {"branch_id": branch_id, "keywords": [], "message": f"키워드 조회 실패: {str(e)}"}
-    
-    # Firebase가 없으면 기본값 반환
-    if branch_id == 1:  # 청담장어마켓 송파점
-        return {"branch_id": branch_id, "keywords": ["송파점", "장어마켓"]}
-    
-    return {"branch_id": branch_id, "keywords": []}
+    if not db:
+        return {"branch_id": branch_id, "keywords": [], "message": "Firebase 미설정"}
+    try:
+        keywords = get_keywords_from_firebase(branch_id)
+        return {"branch_id": branch_id, "keywords": keywords}
+    except Exception as e:
+        return {"branch_id": branch_id, "keywords": [], "message": f"키워드 조회 실패: {str(e)}"}
 
 @app.post("/api/keywords/add")
 def add_keyword(payload: KeywordAdd):
