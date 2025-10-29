@@ -16,5 +16,6 @@
     "app.py": {
       "maxDuration": 30
     }
-  }
+  },
+  "buildCommand": "echo 'Building...'"
 }
