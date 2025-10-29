@@ -248,14 +248,18 @@ NAVER_SECRET=your_client_secret_here
     <div class="section">
       <h2>배포 방법</h2>
       
-      <h3>Railway 배포 (추천)</h3>
+      <h3>Vercel 배포 (추천)</h3>
       <ol>
         <li>GitHub에 코드 푸시</li>
-        <li><a href="https://railway.app" target="_blank">Railway.app</a>에서 계정 생성</li>
-        <li>"New Project" → "Deploy from GitHub repo" 선택</li>
+        <li><a href="https://vercel.com" target="_blank">Vercel.com</a>에서 계정 생성</li>
+        <li>"New Project" → "Import Git Repository" 선택</li>
         <li>저장소 선택 후 자동 배포</li>
         <li>환경변수 설정 (NAVER_ID, NAVER_SECRET)</li>
       </ol>
+      
+      <div class="info-box">
+        <strong>💡 Vercel 장점:</strong> 무료 플랜에서 월 100GB 대역폭, 무제한 배포, 서버리스 함수로 비용 효율적
+      </div>
       
       <h3>Docker를 사용한 배포</h3>
       <div class="code-block">
