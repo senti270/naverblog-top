@@ -71,9 +71,51 @@ Base.metadata.create_all(engine)
 def seed_branches():
     with SessionLocal() as s:
         # 메모리 DB이므로 매번 새로 생성
-        s.query(Branch).delete()  # 기존 데이터 삭제
+        s.query(Keyword).delete()  # 키워드 먼저 삭제
+        s.query(Branch).delete()   # 지점 삭제
+        
+        # 기본 지점 생성
+        branch_map = {}
         for name in DEFAULT_BRANCHES:
-            s.add(Branch(name=name))
+            branch = Branch(name=name)
+            s.add(branch)
+            s.flush()  # ID 생성
+            branch_map[name] = branch.id
+        
+        # 기존 키워드 데이터 마이그레이션 (로컬에서만)
+        try:
+            import sqlite3
+            old_conn = sqlite3.connect('data.db')
+            old_cursor = old_conn.cursor()
+            
+            # 기존 지점명 매핑
+            old_cursor.execute('SELECT id, name FROM branches')
+            old_branches = {name: old_id for old_id, name in old_cursor.fetchall()}
+            
+            # 기존 키워드 가져오기
+            old_cursor.execute('SELECT branch_id, text FROM keywords')
+            old_keywords = old_cursor.fetchall()
+            
+            # 키워드 마이그레이션
+            migrated_count = 0
+            for old_branch_id, keyword_text in old_keywords:
+                # 기존 지점명 찾기
+                old_cursor.execute('SELECT name FROM branches WHERE id = ?', (old_branch_id,))
+                old_branch_name = old_cursor.fetchone()
+                if old_branch_name:
+                    old_branch_name = old_branch_name[0]
+                    # 새 지점 ID 찾기
+                    new_branch_id = branch_map.get(old_branch_name)
+                    if new_branch_id:
+                        s.add(Keyword(branch_id=new_branch_id, text=keyword_text))
+                        migrated_count += 1
+            
+            old_conn.close()
+            print(f"기존 키워드 {migrated_count}개 마이그레이션 완료")
+            
+        except Exception as e:
+            print(f"키워드 마이그레이션 실패 (로컬이 아닌 환경): {e}")
+        
         s.commit()
         print(f"지점 {len(DEFAULT_BRANCHES)}개 생성 완료")
 
