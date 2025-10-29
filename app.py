@@ -147,8 +147,15 @@ def update_branch_names():
             s.commit()
             print(f"지점명 {updated}개 업데이트 완료")
 
+# 앱 시작 시 데이터 초기화
 seed_branches()
 update_branch_names()
+
+# 앱 시작 후 데이터 확인
+with SessionLocal() as s:
+    branch_count = s.query(Branch).count()
+    keyword_count = s.query(Keyword).count()
+    print(f"앱 시작 완료 - 지점: {branch_count}개, 키워드: {keyword_count}개")
 
 # ===== helpers =====
 def top3_urls(keyword: str, sort: str = "sim") -> List[str]:
