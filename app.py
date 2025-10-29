@@ -219,6 +219,7 @@ def get_keywords(branch_id: int = Query(..., ge=1)):
     if IS_VERCEL:
         # Vercel에서는 정적 데이터 반환
         print(f"Vercel 키워드 요청 - branch_id: {branch_id}")
+        print(f"DEFAULT_BRANCHES: {DEFAULT_BRANCHES}")
         
         # 지점 ID로 지점명 찾기
         if 1 <= branch_id <= len(DEFAULT_BRANCHES):

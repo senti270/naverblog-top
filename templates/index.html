@@ -538,16 +538,24 @@
           body: JSON.stringify({ branch_id: id, keyword })
         });
         
+        const result = await res.json();
+        
         if (!res.ok) {
-          const error = await res.text();
-          alert(`키워드 추가 실패: ${error}`);
+          alert(`키워드 추가 실패: ${result.message || res.statusText}`);
+          return;
+        }
+        
+        if (!result.ok) {
+          alert(result.message);
           return;
         }
         
         newKwInput.value = "";
         await loadKeywords(); // 목록 새로고침
+        alert("키워드가 추가되었습니다.");
       } catch (error) {
-        alert("키워드 추가 중 오류가 발생했습니다.");
+        console.error("키워드 추가 에러:", error);
+        alert("키워드 추가 중 오류가 발생했습니다: " + error.message);
       }
     }
 
