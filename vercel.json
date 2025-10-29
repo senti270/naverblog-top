@@ -11,9 +11,5 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ],
-  "env": {
-    "NAVER_ID": "@naver_id",
-    "NAVER_SECRET": "@naver_secret"
-  }
+  ]
 }
