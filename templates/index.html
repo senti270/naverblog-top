@@ -668,7 +668,8 @@
           return; 
         }
         
-        const rows = await res.json();
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (data.results || []);
         renderRows(rows);
       } catch (error) {
         tbody.innerHTML = `<tr><td colspan="4" class="loading" style="color: #ef4444;">❌ 네트워크 오류가 발생했습니다.</td></tr>`;

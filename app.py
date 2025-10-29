@@ -350,7 +350,12 @@ def run_query(payload: Dict):
         results: List[Dict] = []
         for kw in keywords:
             items = search_naver_blog(kw)
-            results.extend(items)
+            for idx, it in enumerate(items):
+                results.append({
+                "keyword": kw,
+                    "rank": idx + 1,
+                    "url": it.get("link", "")
+                })
         return {"ok": True, "results": results}
     except Exception as e:
         raise HTTPException(500, f"검색 실패: {str(e)}")
