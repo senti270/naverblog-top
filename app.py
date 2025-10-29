@@ -217,11 +217,14 @@ def get_branches():
 @app.get("/api/keywords")
 def get_keywords(branch_id: int = Query(..., ge=1)):
     if IS_VERCEL:
-        # Vercel에서는 정적 데이터 반환 (청담장어마켓 송파점만 키워드 있음)
-        if branch_id == 5:  # 청담장어마켓 송파점
-            return {"branch_id": branch_id, "keywords": ["송파점", "장어마켓"]}
-        else:
-            return {"branch_id": branch_id, "keywords": []}
+        # Vercel에서는 정적 데이터 반환
+        # 지점 ID로 지점명 찾기
+        if 1 <= branch_id <= len(DEFAULT_BRANCHES):
+            branch_name = DEFAULT_BRANCHES[branch_id - 1]
+            if branch_name == "청담장어마켓 송파점":
+                return {"branch_id": branch_id, "keywords": ["송파점", "장어마켓"]}
+        
+        return {"branch_id": branch_id, "keywords": []}
     else:
         # 로컬에서는 DB 사용
         with SessionLocal() as s:
