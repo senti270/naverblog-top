@@ -193,14 +193,37 @@ def add_keyword_to_firebase(branch_id: int, keyword: str) -> bool:
         store_data = store_doc.to_dict()
         print(f"✅ 지점 ID {branch_id} -> Store ID: {store_id}, Name: {store_data.get('name')}")
         
-        # 중복 체크
+        # 중복/비활성 여부 체크
         print(f"중복 체크 중... storeId={store_id}, keyword='{keyword}'")
-        existing = db.collection('keywords').where('storeId', '==', store_id).where('keyword', '==', keyword).limit(1).stream()
-        existing_list = list(existing)
-        if existing_list:
-            print(f"❌ 키워드 '{keyword}'가 이미 존재함")
-            return False
-        print(f"✅ 중복 없음")
+        same_keyword_docs = list(
+            db.collection('keywords')
+              .where('storeId', '==', store_id)
+              .where('keyword', '==', keyword)
+              .stream()
+        )
+        # 활성 문서가 있으면 중복 처리
+        for d in same_keyword_docs:
+            data = d.to_dict()
+            if data.get('isActive') is True:
+                print(f"❌ 키워드 '{keyword}'가 이미 활성 상태로 존재함")
+                return False
+        # 비활성 문서가 있으면 재활성화 처리
+        for d in same_keyword_docs:
+            data = d.to_dict()
+            if data.get('isActive') is False:
+                print(f"♻️ 비활성 상태 키워드 재활성화: '{keyword}'")
+                # 최대 order 계산
+                order_query = db.collection('keywords').where('storeId', '==', store_id).order_by('order', direction=firestore.Query.DESCENDING).limit(1)
+                order_docs = list(order_query.stream())
+                max_order = order_docs[0].to_dict().get('order', 0) if order_docs else 0
+                d.reference.update({
+                    'isActive': True,
+                    'order': data.get('order') or (max_order + 1),
+                    'updatedAt': firestore.SERVER_TIMESTAMP
+                })
+                print(f"✅ 재활성화 완료 (order: {data.get('order') or (max_order + 1)})")
+                return True
+        print(f"✅ 동일 키워드 문서 없음 → 신규 생성 진행")
         
         # 최대 order 값 찾기
         print(f"최대 order 값 찾는 중...")
