@@ -19,9 +19,9 @@ load_dotenv()
 
 # 네이버 API 설정
 try:
-    NAVER_ID = os.getenv("NAVER_ID")
-    NAVER_SECRET = os.getenv("NAVER_SECRET")
-    if not NAVER_ID or not NAVER_SECRET:
+NAVER_ID = os.getenv("NAVER_ID")
+NAVER_SECRET = os.getenv("NAVER_SECRET")
+if not NAVER_ID or not NAVER_SECRET:
         raise ValueError("NAVER_ID 또는 NAVER_SECRET이 설정되지 않음")
 except:
     NAVER_ID = "test_id"
@@ -146,7 +146,7 @@ def get_keywords_from_firebase(branch_id: int) -> List[str]:
         store_data = store_doc.to_dict()
         print(f"✅ 지점 ID {branch_id} -> Store ID: {store_id}, Name: {store_data.get('name')}")
         
-        # keywords 컬렉션에서 해당 storeId의 키워드들 가져오기
+        # keywords 컬렉션에서 해당 storeId의 키워드들 가져오기 (신규 스키마)
         keywords_ref = db.collection('keywords')
         print(f"keywords 컬렉션에서 storeId={store_id} 조회 중...")
         query = keywords_ref.where('storeId', '==', store_id).where('isActive', '==', True).order_by('order')
@@ -162,6 +162,20 @@ def get_keywords_from_firebase(branch_id: int) -> List[str]:
             print(f"  문서 {i+1}: keyword='{keyword_text}', isActive={is_active}")
             if keyword_text and is_active:
                 keywords.append(keyword_text)
+
+        # 레거시 스키마 지원: branch_id + text 형태 문서도 함께 읽음
+        try:
+            legacy_query = db.collection('keywords').where('branch_id', '==', branch_id)
+            legacy_docs = list(legacy_query.stream())
+            print(f"레거시 키워드 문서 {len(legacy_docs)}개 발견")
+            for j, ldoc in enumerate(legacy_docs):
+                ldata = ldoc.to_dict()
+                ltext = ldata.get('text')
+                if ltext and ltext not in keywords:
+                    keywords.append(ltext)
+                    print(f"  레거시 문서 {j+1}: text='{ltext}' 포함")
+        except Exception as le:
+            print(f"레거시 키워드 조회 중 오류: {le}")
         
         print(f"✅ 최종 키워드 {len(keywords)}개: {keywords}")
         return keywords
@@ -193,7 +207,7 @@ def add_keyword_to_firebase(branch_id: int, keyword: str) -> bool:
         store_data = store_doc.to_dict()
         print(f"✅ 지점 ID {branch_id} -> Store ID: {store_id}, Name: {store_data.get('name')}")
         
-        # 중복/비활성 여부 체크
+        # 중복/비활성 여부 체크 (신규 스키마)
         print(f"중복 체크 중... storeId={store_id}, keyword='{keyword}'")
         same_keyword_docs = list(
             db.collection('keywords')
@@ -223,6 +237,34 @@ def add_keyword_to_firebase(branch_id: int, keyword: str) -> bool:
                 })
                 print(f"✅ 재활성화 완료 (order: {data.get('order') or (max_order + 1)})")
                 return True
+        # 레거시 스키마 문서가 있으면 마이그레이션 후 사용
+        legacy_dups = list(
+            db.collection('keywords')
+              .where('branch_id', '==', branch_id)
+              .where('text', '==', keyword)
+              .stream()
+        )
+        if legacy_dups:
+            print(f"🧩 레거시 문서 {len(legacy_dups)}개 발견 → 신규 스키마로 업데이트")
+            # 최대 order 계산
+            order_query = db.collection('keywords').where('storeId', '==', store_id).order_by('order', direction=firestore.Query.DESCENDING).limit(1)
+            order_docs = list(order_query.stream())
+            max_order = order_docs[0].to_dict().get('order', 0) if order_docs else 0
+            for d in legacy_dups:
+                d.reference.update({
+                    'keyword': keyword,
+                    'storeId': store_id,
+                    'isActive': True,
+                    'order': max_order + 1,
+                    'mobileVolume': 0,
+                    'monthlySearchVolume': 0,
+                    'pcVolume': 0,
+                    'createdAt': firestore.SERVER_TIMESTAMP,
+                    'updatedAt': firestore.SERVER_TIMESTAMP,
+                })
+            print("✅ 레거시 문서 업데이트 완료")
+            return True
+
         print(f"✅ 동일 키워드 문서 없음 → 신규 생성 진행")
         
         # 최대 order 값 찾기
