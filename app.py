@@ -194,6 +194,14 @@ def guide(request: Request):
 def get_branches():
     with SessionLocal() as s:
         items = s.query(Branch).order_by(Branch.name.asc()).all()
+        
+        # 데이터가 없으면 다시 초기화
+        if not items:
+            print("지점 데이터가 없어서 다시 초기화합니다...")
+            seed_branches()
+            items = s.query(Branch).order_by(Branch.name.asc()).all()
+            print(f"재초기화 완료 - 지점 {len(items)}개")
+        
         return [{"id": b.id, "name": b.name} for b in items]
 
 # 지점 키워드 불러오기
