@@ -501,9 +501,25 @@
 
     async function loadKeywords(){
       const id = parseInt(branchSel.value,10);
+      console.log("키워드 로딩 - branch_id:", id);
+      
+      if (!id) {
+        console.log("지점이 선택되지 않음");
+        renderKeywordList([]);
+        return;
+      }
+      
       const res = await fetch(`/api/keywords?branch_id=${id}`);
-      if(!res.ok){ alert("키워드 불러오기 실패"); return; }
+      console.log("키워드 API 응답:", res.status);
+      
+      if(!res.ok){ 
+        console.error("키워드 불러오기 실패:", res.status);
+        alert("키워드 불러오기 실패"); 
+        return; 
+      }
+      
       const data = await res.json();
+      console.log("키워드 데이터:", data);
       renderKeywordList(data.keywords || []);
     }
 
@@ -657,6 +673,7 @@
     
     // 지점 변경 시 키워드 목록 자동 로드 및 조회결과 초기화
     branchSel.addEventListener("change", function() {
+      console.log("지점 변경됨 - value:", this.value);
       if (this.value) {
         loadKeywords();
         // 조회결과 초기화
