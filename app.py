@@ -70,12 +70,12 @@ Base.metadata.create_all(engine)
 
 def seed_branches():
     with SessionLocal() as s:
-        existing = {b.name for b in s.query(Branch).all()}
-        created = 0
+        # 메모리 DB이므로 매번 새로 생성
+        s.query(Branch).delete()  # 기존 데이터 삭제
         for name in DEFAULT_BRANCHES:
-            if name not in existing:
-                s.add(Branch(name=name)); created += 1
-        if created: s.commit()
+            s.add(Branch(name=name))
+        s.commit()
+        print(f"지점 {len(DEFAULT_BRANCHES)}개 생성 완료")
 
 def update_branch_names():
     """기존 지점명을 새로운 형식으로 업데이트"""
