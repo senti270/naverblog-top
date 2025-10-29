@@ -269,8 +269,11 @@ def get_keywords(branch_id: int = Query(..., ge=1)):
     """지점 키워드 조회"""
     if db:
         # Firebase 사용
-        keywords = get_keywords_from_firebase(branch_id)
-        return {"branch_id": branch_id, "keywords": keywords}
+        try:
+            keywords = get_keywords_from_firebase(branch_id)
+            return {"branch_id": branch_id, "keywords": keywords}
+        except Exception as e:
+            return {"branch_id": branch_id, "keywords": [], "message": f"키워드 조회 실패: {str(e)}"}
     
     # Firebase가 없으면 기본값 반환
     if branch_id == 1:  # 청담장어마켓 송파점
@@ -290,11 +293,27 @@ def add_keyword(payload: KeywordAdd):
     if not keyword:
         raise HTTPException(400, "키워드를 입력해주세요.")
     
-    success = add_keyword_to_firebase(branch_id, keyword)
-    if success:
-        return {"ok": True, "message": "키워드가 추가되었습니다."}
-    else:
-        return {"ok": False, "message": "키워드 추가에 실패했습니다. (중복 또는 오류)"}
+    # 상세 에러 메시지 제공
+    try:
+        stores_ref = db.collection('stores')
+        store_docs = stores_ref.where('id', '==', branch_id).limit(1).stream()
+        store_doc = next(store_docs, None)
+        if not store_doc:
+            return {"ok": False, "message": f"지점 ID {branch_id}를 찾을 수 없습니다. stores 컬렉션의 id 필드를 확인하세요."}
+
+        store_id = store_doc.id
+
+        # 중복 체크
+        existing = db.collection('keywords').where('storeId', '==', store_id).where('keyword', '==', keyword).limit(1).stream()
+        if list(existing):
+            return {"ok": False, "message": "이미 존재하는 키워드입니다."}
+
+        added = add_keyword_to_firebase(branch_id, keyword)
+        if added:
+            return {"ok": True, "message": "키워드가 추가되었습니다."}
+        return {"ok": False, "message": "추가 중 알 수 없는 오류가 발생했습니다."}
+    except Exception as e:
+        return {"ok": False, "message": f"추가 실패: {str(e)}"}
 
 @app.delete("/api/keywords/delete")
 def delete_keyword(payload: KeywordDelete):
