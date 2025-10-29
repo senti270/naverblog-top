@@ -17,15 +17,9 @@ from firebase_admin import credentials, firestore
 # ===== 환경변수 =====
 load_dotenv()
 
-# 네이버 API 설정
-try:
-NAVER_ID = os.getenv("NAVER_ID")
-NAVER_SECRET = os.getenv("NAVER_SECRET")
-if not NAVER_ID or not NAVER_SECRET:
-        raise ValueError("NAVER_ID 또는 NAVER_SECRET이 설정되지 않음")
-except:
-    NAVER_ID = "test_id"
-    NAVER_SECRET = "test_secret"
+# 네이버 API 설정 (indentation 이슈 방지를 위해 단순화)
+NAVER_ID = os.getenv("NAVER_ID") or "test_id"
+NAVER_SECRET = os.getenv("NAVER_SECRET") or "test_secret"
 
 API_URL = "https://openapi.naver.com/v1/search/blog.json"
 
@@ -49,6 +43,15 @@ except Exception as e:
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+# favicon (avoid 500 when icon missing)
+from fastapi.responses import FileResponse, Response
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon_handler():
+    icon_path = os.path.join("static", "favicon.ico")
+    if os.path.exists(icon_path):
+        return FileResponse(icon_path)
+    return Response(status_code=204)
 
 # ===== Pydantic models =====
 class KeywordAdd(BaseModel):
