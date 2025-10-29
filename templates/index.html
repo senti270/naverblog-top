@@ -497,9 +497,17 @@
       const res = await fetch("/api/branches");
       const data = await res.json();
       console.log("지점 데이터:", data);
+      
+      // 에러 메시지 처리
+      if (data.error) {
+        branchSel.innerHTML = `<option value="">${data.error}</option>`;
+        keywordList.innerHTML = '<div class="empty-state">지점을 먼저 설정해주세요.</div>';
+        return;
+      }
+      
       branchSel.innerHTML = data.map(b=>`<option value="${b.id}">${escapeHtml(b.name)}</option>`).join("");
       
-      // 첫 번째 지점 자동 선택 (청담장어마켓 송파점)
+      // 첫 번째 지점 자동 선택
       if (data.length > 0) {
         branchSel.value = data[0].id;
         console.log("첫 번째 지점 자동 선택:", data[0].name, "ID:", data[0].id);

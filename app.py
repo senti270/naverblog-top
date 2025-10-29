@@ -281,21 +281,15 @@ async def guide(request: Request):
 @app.get("/api/branches")
 def get_branches():
     """지점 목록 조회"""
-    if db:
-        # Firebase 사용
-        branches = get_branches_from_firebase()
-        if branches:
-            return branches
+    if not db:
+        return {"error": "Firebase가 설정되지 않았습니다. 관리자에게 문의하세요."}
     
-    # Firebase가 없거나 데이터가 없으면 기본값 반환
-    default_branches = [
-        {"id": 1, "name": "청담장어마켓 송파점"},
-        {"id": 2, "name": "청담장어마켓 동탄점"},
-        {"id": 3, "name": "카페드로잉 석촌호수점"},
-        {"id": 4, "name": "카페드로잉 분당점"},
-        {"id": 5, "name": "카페드로잉 동탄점"}
-    ]
-    return default_branches
+    # Firebase 사용
+    branches = get_branches_from_firebase()
+    if not branches:
+        return {"error": "저장된 지점이 없습니다. Firebase stores 컬렉션에 지점 데이터를 추가해주세요."}
+    
+    return branches
 
 @app.get("/api/keywords")
 def get_keywords(branch_id: int = Query(..., ge=1)):
