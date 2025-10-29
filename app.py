@@ -218,12 +218,18 @@ def get_branches():
 def get_keywords(branch_id: int = Query(..., ge=1)):
     if IS_VERCEL:
         # Vercel에서는 정적 데이터 반환
+        print(f"Vercel 키워드 요청 - branch_id: {branch_id}")
+        
         # 지점 ID로 지점명 찾기
         if 1 <= branch_id <= len(DEFAULT_BRANCHES):
             branch_name = DEFAULT_BRANCHES[branch_id - 1]
+            print(f"지점명: {branch_name}")
+            
             if branch_name == "청담장어마켓 송파점":
+                print("청담장어마켓 송파점 키워드 반환")
                 return {"branch_id": branch_id, "keywords": ["송파점", "장어마켓"]}
         
+        print("키워드 없음")
         return {"branch_id": branch_id, "keywords": []}
     else:
         # 로컬에서는 DB 사용
