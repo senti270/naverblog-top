@@ -19,9 +19,9 @@ load_dotenv()
 
 # 네이버 API 설정
 try:
-    NAVER_ID = os.getenv("NAVER_ID")
-    NAVER_SECRET = os.getenv("NAVER_SECRET")
-    if not NAVER_ID or not NAVER_SECRET:
+NAVER_ID = os.getenv("NAVER_ID")
+NAVER_SECRET = os.getenv("NAVER_SECRET")
+if not NAVER_ID or not NAVER_SECRET:
         raise ValueError("NAVER_ID 또는 NAVER_SECRET이 설정되지 않음")
 except:
     NAVER_ID = "test_id"
@@ -299,16 +299,18 @@ def add_keyword(payload: KeywordAdd):
         if not store_doc:
             return {"ok": False, "message": f"지점 ID {branch_id}를 찾을 수 없습니다. stores 컬렉션의 id 필드를 확인하세요."}
 
-        store_id = store_doc.id
-
-        # 중복 체크
-        existing = db.collection('keywords').where('storeId', '==', store_id).where('keyword', '==', keyword).limit(1).stream()
-        if list(existing):
-            return {"ok": False, "message": "이미 존재하는 키워드입니다."}
+        # 배열 기반 현재 키워드 확인
+        current_keywords = store_doc.to_dict().get('keywords', [])
+        if keyword in current_keywords:
+            return {"ok": True, "message": "이미 존재하는 키워드입니다.", "keywords": current_keywords}
 
         added = add_keyword_to_firebase(branch_id, keyword)
         if added:
-            return {"ok": True, "message": "키워드가 추가되었습니다."}
+            # 최신 목록 반환
+            refreshed = db.collection('stores').where('id', '==', branch_id).limit(1).stream()
+            refreshed_doc = next(refreshed, None)
+            keywords_now = refreshed_doc.to_dict().get('keywords', []) if refreshed_doc else []
+            return {"ok": True, "message": "키워드가 추가되었습니다.", "keywords": keywords_now}
         return {"ok": False, "message": "추가 중 알 수 없는 오류가 발생했습니다."}
     except Exception as e:
         return {"ok": False, "message": f"추가 실패: {str(e)}"}

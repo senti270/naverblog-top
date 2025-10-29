@@ -574,17 +574,14 @@
         
         if (!res.ok) {
           alert(`키워드 추가 실패: ${result.message || res.statusText}`);
-          return;
+        } else if (!result.ok) {
+          alert(result.message || "추가 실패");
+        } else {
+          alert(result.message || "키워드가 추가되었습니다.");
         }
-        
-        if (!result.ok) {
-          alert(result.message);
-          return;
-        }
-        
+        // 서버 판단과 관계없이 최신 목록으로 동기화
         newKwInput.value = "";
-        await loadKeywords(); // 목록 새로고침
-        alert("키워드가 추가되었습니다.");
+        await loadKeywords();
       } catch (error) {
         console.error("키워드 추가 에러:", error);
         alert("키워드 추가 중 오류가 발생했습니다: " + error.message);
