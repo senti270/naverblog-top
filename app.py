@@ -118,63 +118,118 @@ def get_branches_from_firebase() -> List[Dict]:
         return []
 
 def get_keywords_from_firebase(branch_id: int) -> List[str]:
-    """Firebase에서 키워드 목록 가져오기"""
+    """Firebase에서 키워드 목록 가져오기 (기존 keywords 컬렉션 구조 사용)"""
     if not db:
         return []
     
     try:
+        # stores 컬렉션에서 branch_id에 해당하는 storeId 찾기
+        stores_ref = db.collection('stores')
+        store_docs = stores_ref.where('id', '==', branch_id).limit(1).stream()
+        store_doc = next(store_docs, None)
+        
+        if not store_doc:
+            print(f"지점 ID {branch_id}에 해당하는 store를 찾을 수 없음")
+            return []
+        
+        store_id = store_doc.id  # Firestore 문서 ID
+        print(f"지점 ID {branch_id} -> Store ID: {store_id}")
+        
+        # keywords 컬렉션에서 해당 storeId의 키워드들 가져오기
         keywords_ref = db.collection('keywords')
-        query = keywords_ref.where('branch_id', '==', branch_id).order_by('created_at')
+        query = keywords_ref.where('storeId', '==', store_id).where('isActive', '==', True).order_by('order')
         docs = query.stream()
         
         keywords = []
         for doc in docs:
             data = doc.to_dict()
-            keywords.append(data.get("text", ""))
+            keyword_text = data.get("keyword", "")
+            if keyword_text:
+                keywords.append(keyword_text)
         
+        print(f"키워드 {len(keywords)}개 발견: {keywords}")
         return keywords
     except Exception as e:
         print(f"Firebase 키워드 조회 오류: {e}")
         return []
 
 def add_keyword_to_firebase(branch_id: int, keyword: str) -> bool:
-    """Firebase에 키워드 추가"""
+    """Firebase에 키워드 추가 (기존 keywords 컬렉션 구조 사용)"""
     if not db:
         return False
     
     try:
-        # 중복 체크
-        existing = db.collection('keywords').where('branch_id', '==', branch_id).where('text', '==', keyword).limit(1).stream()
-        if list(existing):
+        # stores 컬렉션에서 branch_id에 해당하는 storeId 찾기
+        stores_ref = db.collection('stores')
+        store_docs = stores_ref.where('id', '==', branch_id).limit(1).stream()
+        store_doc = next(store_docs, None)
+        
+        if not store_doc:
+            print(f"지점 ID {branch_id}에 해당하는 store를 찾을 수 없음")
             return False
+        
+        store_id = store_doc.id
+        
+        # 중복 체크
+        existing = db.collection('keywords').where('storeId', '==', store_id).where('keyword', '==', keyword).limit(1).stream()
+        if list(existing):
+            print(f"키워드 '{keyword}'가 이미 존재함")
+            return False
+        
+        # 최대 order 값 찾기
+        order_query = db.collection('keywords').where('storeId', '==', store_id).order_by('order', direction=firestore.Query.DESCENDING).limit(1)
+        order_docs = list(order_query.stream())
+        max_order = order_docs[0].to_dict().get('order', 0) if order_docs else 0
         
         # 키워드 추가
         doc_ref = db.collection('keywords').document()
         doc_ref.set({
-            'branch_id': branch_id,
-            'text': keyword,
-            'created_at': firestore.SERVER_TIMESTAMP
+            'keyword': keyword,
+            'storeId': store_id,
+            'isActive': True,
+            'order': max_order + 1,
+            'mobileVolume': 0,
+            'monthlySearchVolume': 0,
+            'pcVolume': 0,
+            'createdAt': firestore.SERVER_TIMESTAMP,
+            'updatedAt': firestore.SERVER_TIMESTAMP
         })
         
+        print(f"키워드 '{keyword}' 추가 완료 (order: {max_order + 1})")
         return True
     except Exception as e:
         print(f"Firebase 키워드 추가 오류: {e}")
         return False
 
 def delete_keyword_from_firebase(branch_id: int, keyword: str) -> bool:
-    """Firebase에서 키워드 삭제"""
+    """Firebase에서 키워드 삭제 (기존 keywords 컬렉션 구조 사용)"""
     if not db:
         return False
     
     try:
-        # 키워드 찾기 및 삭제
-        query = db.collection('keywords').where('branch_id', '==', branch_id).where('text', '==', keyword)
+        # stores 컬렉션에서 branch_id에 해당하는 storeId 찾기
+        stores_ref = db.collection('stores')
+        store_docs = stores_ref.where('id', '==', branch_id).limit(1).stream()
+        store_doc = next(store_docs, None)
+        
+        if not store_doc:
+            print(f"지점 ID {branch_id}에 해당하는 store를 찾을 수 없음")
+            return False
+        
+        store_id = store_doc.id
+        
+        # 키워드 찾기 및 삭제 (isActive를 False로 변경)
+        query = db.collection('keywords').where('storeId', '==', store_id).where('keyword', '==', keyword).where('isActive', '==', True)
         docs = query.stream()
         
         deleted = False
         for doc in docs:
-            doc.reference.delete()
+            doc.reference.update({
+                'isActive': False,
+                'updatedAt': firestore.SERVER_TIMESTAMP
+            })
             deleted = True
+            print(f"키워드 '{keyword}' 비활성화 완료")
         
         return deleted
     except Exception as e:
