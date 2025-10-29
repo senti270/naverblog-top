@@ -338,17 +338,25 @@ def delete_keyword(payload: KeywordDelete):
 
 @app.post("/api/run")
 def run_query(payload: Dict):
-    """네이버 블로그 검색"""
-    keywords = payload.get("keywords", [])
+    """네이버 블로그 검색
+    - payload.keywords 가 있으면 그것을 사용
+    - 없으면 payload.branch_id로 stores의 keywords 배열을 조회해서 사용
+    """
+    keywords: List[str] = payload.get("keywords") or []
+    branch_id = payload.get("branch_id")
+
+    # 필요 시 저장된 키워드 로드
+    if not keywords and branch_id is not None and db:
+        keywords = get_keywords_from_firebase(int(branch_id))
+
     if not keywords:
         raise HTTPException(400, "키워드를 입력해주세요.")
-    
+
     try:
-        results = []
+        results: List[Dict] = []
         for kw in keywords:
             items = search_naver_blog(kw)
             results.extend(items)
-        
         return {"ok": True, "results": results}
     except Exception as e:
         raise HTTPException(500, f"검색 실패: {str(e)}")
