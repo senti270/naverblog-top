@@ -37,7 +37,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # ===== DB setup =====
-engine = create_engine("sqlite:///data.db", future=True)
+# Vercel에서는 파일 시스템에 쓸 수 없으므로 메모리 DB 사용
+engine = create_engine("sqlite:///:memory:", future=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
 
