@@ -19,9 +19,9 @@ load_dotenv()
 
 # 네이버 API 설정
 try:
-NAVER_ID = os.getenv("NAVER_ID")
-NAVER_SECRET = os.getenv("NAVER_SECRET")
-if not NAVER_ID or not NAVER_SECRET:
+    NAVER_ID = os.getenv("NAVER_ID")
+    NAVER_SECRET = os.getenv("NAVER_SECRET")
+    if not NAVER_ID or not NAVER_SECRET:
         raise ValueError("NAVER_ID 또는 NAVER_SECRET이 설정되지 않음")
 except:
     NAVER_ID = "test_id"
