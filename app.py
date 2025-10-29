@@ -42,6 +42,10 @@ engine = create_engine("sqlite:///:memory:", future=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
 
+# Vercel 환경에서는 정적 데이터 사용
+import os
+IS_VERCEL = os.getenv("VERCEL") == "1"
+
 class Branch(Base):
     __tablename__ = "branches"
     id   = Column(Integer, primary_key=True)
@@ -192,24 +196,37 @@ def guide(request: Request):
 # 지점 목록
 @app.get("/api/branches")
 def get_branches():
-    with SessionLocal() as s:
-        items = s.query(Branch).order_by(Branch.name.asc()).all()
-        
-        # 데이터가 없으면 다시 초기화
-        if not items:
-            print("지점 데이터가 없어서 다시 초기화합니다...")
-            seed_branches()
+    if IS_VERCEL:
+        # Vercel에서는 정적 데이터 반환
+        return [{"id": i+1, "name": name} for i, name in enumerate(DEFAULT_BRANCHES)]
+    else:
+        # 로컬에서는 DB 사용
+        with SessionLocal() as s:
             items = s.query(Branch).order_by(Branch.name.asc()).all()
-            print(f"재초기화 완료 - 지점 {len(items)}개")
-        
-        return [{"id": b.id, "name": b.name} for b in items]
+            
+            # 데이터가 없으면 다시 초기화
+            if not items:
+                print("지점 데이터가 없어서 다시 초기화합니다...")
+                seed_branches()
+                items = s.query(Branch).order_by(Branch.name.asc()).all()
+                print(f"재초기화 완료 - 지점 {len(items)}개")
+            
+            return [{"id": b.id, "name": b.name} for b in items]
 
 # 지점 키워드 불러오기
 @app.get("/api/keywords")
 def get_keywords(branch_id: int = Query(..., ge=1)):
-    with SessionLocal() as s:
-        items = s.query(Keyword).filter(Keyword.branch_id == branch_id).order_by(Keyword.id.asc()).all()
-        return {"branch_id": branch_id, "keywords": [k.text for k in items]}
+    if IS_VERCEL:
+        # Vercel에서는 정적 데이터 반환 (청담장어마켓 송파점만 키워드 있음)
+        if branch_id == 5:  # 청담장어마켓 송파점
+            return {"branch_id": branch_id, "keywords": ["송파점", "장어마켓"]}
+        else:
+            return {"branch_id": branch_id, "keywords": []}
+    else:
+        # 로컬에서는 DB 사용
+        with SessionLocal() as s:
+            items = s.query(Keyword).filter(Keyword.branch_id == branch_id).order_by(Keyword.id.asc()).all()
+            return {"branch_id": branch_id, "keywords": [k.text for k in items]}
 
 # 지점 키워드 저장(덮어쓰기)
 @app.post("/api/keywords")
