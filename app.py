@@ -255,6 +255,10 @@ def save_keywords(payload: Dict):
 # 개별 키워드 추가
 @app.post("/api/keywords/add")
 def add_keyword(payload: Dict):
+    if IS_VERCEL:
+        # Vercel에서는 키워드 추가 비활성화
+        return {"ok": False, "message": "Vercel 환경에서는 키워드 추가가 제한됩니다. 로컬에서 사용하세요."}
+    
     branch_id = payload.get("branch_id")
     keyword = payload.get("keyword", "").strip()
     if not branch_id: raise HTTPException(400, "branch_id 필요")
@@ -276,6 +280,10 @@ def add_keyword(payload: Dict):
 # 개별 키워드 삭제
 @app.delete("/api/keywords/delete")
 def delete_keyword(payload: Dict):
+    if IS_VERCEL:
+        # Vercel에서는 키워드 삭제 비활성화
+        return {"ok": False, "message": "Vercel 환경에서는 키워드 삭제가 제한됩니다. 로컬에서 사용하세요."}
+    
     branch_id = payload.get("branch_id")
     keyword = payload.get("keyword", "").strip()
     if not branch_id: raise HTTPException(400, "branch_id 필요")
